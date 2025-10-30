@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - DGLegacy{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block messages %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-5">
+        <div class="card shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-shield-lock" style="font-size: 4rem; color: var(--primary-color);"></i>
+                    <h2 class="mt-3" style="color: var(--primary-color);">DGLegacy</h2>
+                    <p class="text-muted">Secure Digital Inheritance Management</p>
+                </div>
+                
+                <!-- Error/Success Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.case_number.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-text"></i> Case Number
+                        </label>
+                        {{ form.case_number }}
+                        {% if form.case_number.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.case_number.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-key"></i> Password
+                        </label>
+                        <div class="position-relative">
+                            {{ form.password }}
+                            <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y" 
+                                    style="text-decoration: none; z-index: 10; padding: 0.375rem 0.75rem;"
+                                    onclick="togglePassword()">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Login to Portal
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        Your case number and password were provided by our agency.
+                    </small>
+                </div>
+                
+                <!-- Security Badges -->
+                <div class="mt-4 pt-4 border-top">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2">
+                                <i class="bi bi-shield-check" style="font-size: 2rem; color: #48BB78;"></i>
+                                <div class="small mt-1" style="color: #2D3748; font-weight: 600;">SSL Encrypted</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2">
+                                <i class="bi bi-lock-fill" style="font-size: 2rem; color: #4299E1;"></i>
+                                <div class="small mt-1" style="color: #2D3748; font-weight: 600;">Secure Login</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2">
+                                <i class="bi bi-shield-lock" style="font-size: 2rem; color: #6B46C1;"></i>
+                                <div class="small mt-1" style="color: #2D3748; font-weight: 600;">Data Protected</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-check-circle-fill" style="color: #48BB78;"></i>
+                            Your information is encrypted and secure
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-white">
+                Need help? <a href="{% url 'beneficiary_help' %}" class="text-white" style="text-decoration: underline;">Visit our Help Center</a> or call <a href="tel:+1-800-555-0199" class="text-white" style="text-decoration: underline;">+1 (800) 555-0199</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('id_password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('bi-eye');
+        toggleIcon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('bi-eye-slash');
+        toggleIcon.classList.add('bi-eye');
+    }
+}
+
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000); // 5 seconds
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Assets - DGLegacy{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-briefcase"></i> Your Assets</h1>
+        <p class="text-muted">Case Number: <strong>{{ case.case_number }}</strong></p>
+    </div>
+</div>
+
+<!-- Filter and Search Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="bi bi-search"></i> Search Assets</label>
+                        <input type="text" id="assetSearch" class="form-control" placeholder="Search by type or description...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-funnel"></i> Filter by Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="UNCLAIMED">Unclaimed</option>
+                            <option value="PROCESSING">Processing</option>
+                            <option value="READY_FOR_TRANSFER">Ready</option>
+                            <option value="COMPLETED">Completed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-sort-down"></i> Sort By</label>
+                        <select id="sortBy" class="form-select">
+                            <option value="updated">Recently Updated</option>
+                            <option value="value-high">Value (High to Low)</option>
+                            <option value="value-low">Value (Low to High)</option>
+                            <option value="type">Asset Type</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button id="clearFilters" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if assets %}
+        <div class="row g-4">
+            {% for asset in assets %}
+            <div class="col-md-6 col-lg-4 asset-card" data-status="{{ asset.status }}" data-type="{{ asset.get_asset_type_display }}" data-value="{{ asset.estimated_value }}" data-description="{{ asset.description|lower }}">
+                <div class="card h-100" style="border: 2px solid #f0f0f0; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.borderColor='#4a90e2'; this.style.transform='translateY(-5px)'" onmouseout="this.style.borderColor='#f0f0f0'; this.style.transform='translateY(0)'" onclick="showAssetModal({{ asset.id }}, '{{ asset.get_asset_type_display }}', '{{ asset.description|escapejs }}', '{{ asset.estimated_value }}', '{{ asset.get_status_display }}', '{{ asset.status }}', '{{ asset.updated_at|date:"M d, Y" }}', '{{ asset.institution_name|default:"N/A"|escapejs }}', '{{ asset.account_number|default:"N/A"|escapejs }}')">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="asset-icon {% if asset.asset_type == 'BANK_ACCOUNT' %}bank{% elif asset.asset_type == 'REAL_ESTATE' %}real-estate{% elif asset.asset_type == 'VEHICLE' %}vehicle{% elif asset.asset_type == 'INVESTMENT' %}investment{% elif asset.asset_type == 'CRYPTOCURRENCY' %}crypto{% elif asset.asset_type == 'DIGITAL_ASSET' %}digital{% endif %}">
+                                {% if asset.asset_type == 'BANK_ACCOUNT' %}
+                                    <i class="bi bi-bank"></i>
+                                {% elif asset.asset_type == 'REAL_ESTATE' %}
+                                    <i class="bi bi-house-door"></i>
+                                {% elif asset.asset_type == 'VEHICLE' %}
+                                    <i class="bi bi-car-front"></i>
+                                {% elif asset.asset_type == 'INVESTMENT' %}
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                {% elif asset.asset_type == 'CRYPTOCURRENCY' %}
+                                    <i class="bi bi-currency-bitcoin"></i>
+                                {% elif asset.asset_type == 'DIGITAL_ASSET' %}
+                                    <i class="bi bi-cloud-check"></i>
+                                {% else %}
+                                    <i class="bi bi-box-seam"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1" style="font-weight: 700; color: #1e3a5f;">
+                                    {{ asset.get_asset_type_display }}
+                                </h5>
+                                <div>
+                                    {% if asset.status == 'UNCLAIMED' %}
+                                        <span class="badge bg-secondary">{{ asset.get_status_display }}</span>
+                                    {% elif asset.status == 'PROCESSING' %}
+                                        <span class="badge bg-primary">{{ asset.get_status_display }}</span>
+                                    {% elif asset.status == 'READY_FOR_TRANSFER' %}
+                                        <span class="badge bg-warning text-dark">Ready</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ asset.get_status_display }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="card-text" style="color: #6c757d; font-size: 0.95rem; line-height: 1.6;">{{ asset.description }}</p>
+                        
+                        <div class="mt-auto pt-3" style="border-top: 2px solid #f0f0f0;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted" style="font-size: 0.9rem;"><i class="bi bi-currency-dollar"></i> Estimated Value</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 1.5rem; color: #28a745; font-weight: 700;">
+                                    ${{ asset.estimated_value|currency }}
+                                </strong>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted" style="font-size: 0.85rem;">
+                                    <i class="bi bi-clock-history"></i> Updated {{ asset.updated_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="mt-3 text-muted">No Assets Found</h3>
+                <p class="text-muted">There are currently no assets associated with your case.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Asset Detail Modal -->
+<div class="modal fade" id="assetModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white;">
+                <h5 class="modal-title"><i class="bi bi-briefcase"></i> Asset Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Asset Type</label>
+                        <h6 id="modalType"></h6>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Status</label>
+                        <div id="modalStatus"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Estimated Value</label>
+                        <h4 class="text-success" id="modalValue"></h4>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Last Updated</label>
+                        <p id="modalUpdated"></p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">Description</label>
+                    <p id="modalDescription"></p>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Institution</label>
+                        <p id="modalInstitution"></p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Account/Reference Number</label>
+                        <p id="modalAccount"></p>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> <strong>Next Steps:</strong>
+                    <p class="mb-0" id="modalNextSteps"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Asset Modal Function
+function showAssetModal(id, type, description, value, statusDisplay, status, updated, institution, account) {
+    document.getElementById('modalType').textContent = type;
+    document.getElementById('modalDescription').textContent = description;
+    document.getElementById('modalValue').textContent = '$' + parseFloat(value).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('modalUpdated').textContent = updated;
+    document.getElementById('modalInstitution').textContent = institution;
+    document.getElementById('modalAccount').textContent = account;
+    
+    // Status badge
+    let statusBadge = '';
+    if (status === 'UNCLAIMED') {
+        statusBadge = '<span class="badge bg-secondary">' + statusDisplay + '</span>';
+    } else if (status === 'PROCESSING') {
+        statusBadge = '<span class="badge bg-primary">' + statusDisplay + '</span>';
+    } else if (status === 'READY_FOR_TRANSFER') {
+        statusBadge = '<span class="badge bg-warning text-dark">Ready</span>';
+    } else {
+        statusBadge = '<span class="badge bg-success">' + statusDisplay + '</span>';
+    }
+    document.getElementById('modalStatus').innerHTML = statusBadge;
+    
+    // Next steps based on status
+    let nextSteps = '';
+    if (status === 'UNCLAIMED') {
+        nextSteps = 'This asset has been identified. We will begin the verification process soon.';
+    } else if (status === 'PROCESSING') {
+        nextSteps = 'We are currently verifying your identity and preparing legal documentation for this asset.';
+    } else if (status === 'READY_FOR_TRANSFER') {
+        nextSteps = 'Verification complete! Legal assistance will be provided to help you claim this asset. Check your documents page for details.';
+    } else {
+        nextSteps = 'Congratulations! You have successfully claimed this asset with our assistance.';
+    }
+    document.getElementById('modalNextSteps').textContent = nextSteps;
+    
+    // Show modal
+    new bootstrap.Modal(document.getElementById('assetModal')).show();
+}
+
+// Filter and Search Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('assetSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const clearBtn = document.getElementById('clearFilters');
+    const assetCards = document.querySelectorAll('.asset-card');
+    
+    function filterAssets() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedStatus = statusFilter.value;
+        
+        assetCards.forEach(card => {
+            const type = card.dataset.type.toLowerCase();
+            const description = card.dataset.description;
+            const status = card.dataset.status;
+            
+            const matchesSearch = type.includes(searchTerm) || description.includes(searchTerm);
+            const matchesStatus = !selectedStatus || status === selectedStatus;
+            
+            if (matchesSearch && matchesStatus) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    function sortAssets() {
+        const sortValue = sortBy.value;
+        const container = document.querySelector('.row.g-4');
+        const cards = Array.from(assetCards);
+        
+        cards.sort((a, b) => {
+            if (sortValue === 'value-high') {
+                return parseFloat(b.dataset.value) - parseFloat(a.dataset.value);
+            } else if (sortValue === 'value-low') {
+                return parseFloat(a.dataset.value) - parseFloat(b.dataset.value);
+            } else if (sortValue === 'type') {
+                return a.dataset.type.localeCompare(b.dataset.type);
+            }
+            return 0; // Default: recently updated (no change)
+        });
+        
+        cards.forEach(card => container.appendChild(card));
+    }
+    
+    searchInput.addEventListener('input', filterAssets);
+    statusFilter.addEventListener('change', function() {
+        filterAssets();
+        sortAssets();
+    });
+    sortBy.addEventListener('change', sortAssets);
+    
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        statusFilter.value = '';
+        sortBy.value = 'updated';
+        filterAssets();
+        sortAssets();
+    });
+});
+</script>
+{% endblock %}

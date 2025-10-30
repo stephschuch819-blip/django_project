@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Dashboard - DGLegacy{% endblock %}
+
+{% block messages %}
+<!-- Custom Message Notifications for Dashboard -->
+{% if unread_messages > 0 %}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    {% for msg in recent_messages %}
+        {% if not msg.sender_is_beneficiary and not msg.is_read %}
+        <div class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white; min-width: 320px;">
+            <div class="d-flex">
+                <div class="toast-body" style="font-size: 0.95rem;">
+                    <i class="bi bi-envelope-fill me-2" style="font-size: 1.2rem;"></i>
+                    <strong style="font-size: 1rem;">New Message from DGLegacy</strong><br>
+                    <small style="opacity: 0.95;">{{ msg.subject }}</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Regular Django Messages -->
+{% if messages %}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+    <div class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="background: {% if message.tags == 'error' or message.tags == 'danger' %}linear-gradient(135deg, #dc3545 0%, #c82333 100%){% elif message.tags == 'success' %}linear-gradient(135deg, #28a745 0%, #20c997 100%){% elif message.tags == 'warning' %}linear-gradient(135deg, #ffc107 0%, #ff9800 100%){% else %}linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%){% endif %}; color: white; min-width: 320px;">
+        <div class="d-flex">
+            <div class="toast-body" style="font-size: 0.95rem;">
+                <i class="bi bi-{% if message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle-fill{% elif message.tags == 'success' %}check-circle-fill{% elif message.tags == 'warning' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %} me-2" style="font-size: 1.2rem;"></i>
+                <strong style="font-size: 1rem;">{{ message }}</strong>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-1">Welcome, {{ case.beneficiary_name }}</h1>
+        <p class="text-muted">Case Number: <strong>{{ case.case_number }}</strong></p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <i class="bi bi-briefcase" style="font-size: 2rem; opacity: 0.8;"></i>
+            <h3 class="mt-2">{{ case.assets.count }}</h3>
+            <p>Total Assets</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+            <i class="bi bi-currency-dollar" style="font-size: 2rem; opacity: 0.8;"></i>
+            <h3 class="mt-2">${{ total_value|currency }}</h3>
+            <p>Estimated Total Value</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'beneficiary_messages' %}" class="text-decoration-none">
+            <div class="stat-card" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); cursor: pointer; transition: transform 0.2s;">
+                <i class="bi bi-envelope" style="font-size: 2rem; opacity: 0.8;"></i>
+                <h3 class="mt-2">{{ unread_messages }}</h3>
+                <p>Unread Messages</p>
+                <small style="opacity: 0.9;"><i class="bi bi-arrow-right-circle"></i> Click to view</small>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Next Steps Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" style="border-left: 4px solid #6B46C1;">
+            <div class="card-header" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white;">
+                <i class="bi bi-list-check"></i> Next Steps - Your Action Items
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-start">
+                                <div style="width: 40px; height: 40px; background: #48BB78; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-check-lg" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #2D3748;">Case Created & Assigned</h6>
+                                    <small class="text-muted">Your case has been created and assigned to our team</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-start">
+                                {% if status_counts.PROCESSING > 0 or status_counts.READY_FOR_TRANSFER > 0 or status_counts.COMPLETED > 0 %}
+                                <div style="width: 40px; height: 40px; background: #4299E1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-arrow-repeat" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #2D3748;">Identity Verification</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> In Progress - We're verifying your documents</small>
+                                </div>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #ED8936; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-exclamation-lg" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #2D3748;">Upload Required Documents</h6>
+                                    <small class="text-warning"><i class="bi bi-clock-fill"></i> Action Required</small>
+                                    <br><a href="{% url 'beneficiary_documents' %}" class="btn btn-sm btn-primary mt-2">Upload Documents</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-start">
+                                {% if status_counts.READY_FOR_TRANSFER > 0 %}
+                                <div style="width: 40px; height: 40px; background: #ED8936; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-file-earmark-text" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #2D3748;">Review Legal Documents</h6>
+                                    <small class="text-warning"><i class="bi bi-exclamation-circle-fill"></i> {{ status_counts.READY_FOR_TRANSFER }} asset(s) ready for review</small>
+                                    <br><a href="{% url 'beneficiary_documents' %}" class="btn btn-sm btn-warning mt-2">Review Now</a>
+                                </div>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #CBD5E0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-file-earmark-text" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #718096;">Review Legal Documents</h6>
+                                    <small class="text-muted">Pending verification completion</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-start">
+                                {% if status_counts.COMPLETED > 0 %}
+                                <div style="width: 40px; height: 40px; background: #48BB78; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-check-lg" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #2D3748;">Claim Your Assets</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> {{ status_counts.COMPLETED }} asset(s) successfully claimed!</small>
+                                </div>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #CBD5E0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0;">
+                                    <i class="bi bi-trophy" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #718096;">Claim Your Assets</h6>
+                                    <small class="text-muted">Final step - coming soon</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3 mb-0" style="background: #E6FFFA; border: none; border-left: 4px solid #38B2AC;">
+                    <i class="bi bi-info-circle-fill" style="color: #38B2AC;"></i>
+                    <strong>Need Help?</strong> Our support team is here to assist you. <a href="{% url 'beneficiary_messages' %}">Send us a message</a> or call <a href="tel:+1-800-555-0199">+1 (800) 555-0199</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Case Progress Timeline -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white;">
+                <i class="bi bi-clock-history"></i> Case Progress Timeline
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4" style="position: relative;">
+                            <!-- Progress Line -->
+                            <div style="position: absolute; top: 20px; left: 0; right: 0; height: 4px; background: #E2E8F0; z-index: 0;"></div>
+                            <div style="position: absolute; top: 20px; left: 0; height: 4px; background: linear-gradient(90deg, #6B46C1 0%, #4299E1 100%); z-index: 0; 
+                                {% if status_counts.COMPLETED > 0 %}width: 100%;
+                                {% elif status_counts.READY_FOR_TRANSFER > 0 %}width: 75%;
+                                {% elif status_counts.PROCESSING > 0 %}width: 50%;
+                                {% else %}width: 25%;{% endif %}"></div>
+                            
+                            <!-- Step 1: Case Created -->
+                            <div class="text-center" style="flex: 1; position: relative; z-index: 1;">
+                                <div style="width: 40px; height: 40px; background: #48BB78; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-check-lg" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #2D3748;">Case Created</small><br>
+                                <small class="text-muted">{{ case.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            
+                            <!-- Step 2: Identity Verification -->
+                            <div class="text-center" style="flex: 1; position: relative; z-index: 1;">
+                                {% if status_counts.PROCESSING > 0 or status_counts.READY_FOR_TRANSFER > 0 or status_counts.COMPLETED > 0 %}
+                                <div style="width: 40px; height: 40px; background: #4299E1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-arrow-repeat" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #2D3748;">Verification</small><br>
+                                <small class="text-success">In Progress</small>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #E2E8F0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white;">
+                                    <i class="bi bi-clock" style="color: #A0AEC0; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #718096;">Verification</small><br>
+                                <small class="text-muted">Pending</small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Step 3: Document Preparation -->
+                            <div class="text-center" style="flex: 1; position: relative; z-index: 1;">
+                                {% if status_counts.READY_FOR_TRANSFER > 0 or status_counts.COMPLETED > 0 %}
+                                <div style="width: 40px; height: 40px; background: #ED8936; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-file-earmark-check" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #2D3748;">Documents Ready</small><br>
+                                <small class="text-warning">Review Required</small>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #E2E8F0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white;">
+                                    <i class="bi bi-file-earmark" style="color: #A0AEC0; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #718096;">Documents</small><br>
+                                <small class="text-muted">Pending</small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Step 4: Asset Claiming -->
+                            <div class="text-center" style="flex: 1; position: relative; z-index: 1;">
+                                {% if status_counts.COMPLETED > 0 %}
+                                <div style="width: 40px; height: 40px; background: #48BB78; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <i class="bi bi-trophy-fill" style="color: white; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #2D3748;">Assets Claimed</small><br>
+                                <small class="text-success">{{ status_counts.COMPLETED }} Completed</small>
+                                {% else %}
+                                <div style="width: 40px; height: 40px; background: #E2E8F0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid white;">
+                                    <i class="bi bi-trophy" style="color: #A0AEC0; font-size: 1.2rem;"></i>
+                                </div>
+                                <small style="font-weight: 600; color: #718096;">Claiming</small><br>
+                                <small class="text-muted">Not Started</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4 mb-0" style="background: #EBF8FF; border: none; border-left: 4px solid #4299E1;">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <i class="bi bi-info-circle-fill" style="color: #4299E1;"></i>
+                                    <strong>Current Status:</strong>
+                                    {% if status_counts.COMPLETED > 0 %}
+                                        You have successfully claimed {{ status_counts.COMPLETED }} asset(s)! 
+                                        {% if status_counts.COMPLETED < case.assets.count %}Keep working on the remaining assets.{% endif %}
+                                    {% elif status_counts.READY_FOR_TRANSFER > 0 %}
+                                        {{ status_counts.READY_FOR_TRANSFER }} asset(s) are ready for review. Check your documents page.
+                                    {% elif status_counts.PROCESSING > 0 %}
+                                        We're verifying your identity and preparing documentation. This typically takes 3-5 business days.
+                                    {% else %}
+                                        Please upload required documents to begin the verification process.
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar3"></i> Estimated completion:<br>
+                                        <strong>4-12 weeks</strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-briefcase"></i> Your Assets
+            </div>
+            <div class="card-body">
+                {% if assets %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in assets|slice:":5" %}
+                            <tr>
+                                <td>
+                                    <i class="bi bi-{{ asset.asset_type|lower|slice:':4' }}"></i>
+                                    {{ asset.get_asset_type_display }}
+                                </td>
+                                <td>{{ asset.description|truncatewords:8 }}</td>
+                                <td><strong>${{ asset.estimated_value|currency }}</strong></td>
+                                <td>
+                                    {% if asset.status == 'UNCLAIMED' %}
+                                        <span class="status-badge status-unclaimed">{{ asset.get_status_display }}</span>
+                                    {% elif asset.status == 'PROCESSING' %}
+                                        <span class="status-badge status-processing">{{ asset.get_status_display }}</span>
+                                    {% elif asset.status == 'READY_FOR_TRANSFER' %}
+                                        <span class="status-badge status-ready">{{ asset.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="status-badge status-completed">{{ asset.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'beneficiary_assets' %}" class="btn btn-primary">
+                        View All Assets <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-2">No assets found for your case.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Case Information
+            </div>
+            <div class="card-body">
+                <p><strong>Deceased:</strong><br>{{ case.deceased_name }}</p>
+                <p><strong>Your Email:</strong><br>{{ case.beneficiary_email }}</p>
+                <p><strong>Case Created:</strong><br>{{ case.created_at|date:"M d, Y" }}</p>
+                {% if case.case_description %}
+                <p><strong>Description:</strong><br>{{ case.case_description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-chat-dots"></i> Recent Messages</span>
+                <a href="{% url 'beneficiary_messages' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_messages %}
+                    {% for message in recent_messages %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <small class="text-muted">
+                                {% if message.sender_is_beneficiary %}
+                                    <i class="bi bi-person-circle text-primary"></i> You
+                                {% else %}
+                                    <i class="bi bi-shield-check text-success"></i> DGLegacy
+                                    {% if not message.is_read %}
+                                        <span class="badge bg-warning text-dark ms-1">New</span>
+                                    {% endif %}
+                                {% endif %}
+                            </small>
+                            <small class="text-muted">{{ message.created_at|date:"M d" }}</small>
+                        </div>
+                        <strong class="d-block mb-1" style="font-size: 0.9rem;">{{ message.subject|truncatewords:5 }}</strong>
+                        <p class="mb-0 text-muted" style="font-size: 0.85rem;">{{ message.content|truncatewords:10 }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-chat-left-text" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mb-0 mt-2">No messages yet</p>
+                        <a href="{% url 'beneficiary_messages' %}" class="btn btn-sm btn-primary mt-2">Start Conversation</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-pie-chart"></i> Asset Status
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">Unclaimed</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-secondary" style="width: {{ status_counts.UNCLAIMED|default:0 }}0%">
+                            {{ status_counts.UNCLAIMED|default:0 }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Processing</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-primary" style="width: {{ status_counts.PROCESSING|default:0 }}0%">
+                            {{ status_counts.PROCESSING|default:0 }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Ready</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-warning" style="width: {{ status_counts.READY_FOR_TRANSFER|default:0 }}0%">
+                            {{ status_counts.READY_FOR_TRANSFER|default:0 }}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <small class="text-muted">Completed</small>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" style="width: {{ status_counts.COMPLETED|default:0 }}0%">
+                            {{ status_counts.COMPLETED|default:0 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

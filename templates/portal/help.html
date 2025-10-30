@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Help & FAQ - DGLegacy{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-question-circle"></i> Help & Frequently Asked Questions</h1>
+        <p class="text-muted">Find answers to common questions about the inheritance claiming process</p>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white;">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'beneficiary_messages' %}" class="btn btn-light w-100">
+                            <i class="bi bi-chat-dots"></i> Contact Support
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'beneficiary_documents' %}" class="btn btn-light w-100">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Upload Documents
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="tel:+1-800-555-0199" class="btn btn-light w-100">
+                            <i class="bi bi-telephone"></i> Call Us
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="mailto:support@dglegacy.com" class="btn btn-light w-100">
+                            <i class="bi bi-envelope"></i> Email Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Accordion -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="accordion" id="faqAccordion">
+            
+            <!-- General Questions -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        <i class="bi bi-info-circle me-2"></i> What is DGLegacy and how does it work?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>DGLegacy is a digital inheritance platform that helps beneficiaries claim their rightful inheritance. Here's how it works:</p>
+                        <ol>
+                            <li><strong>Asset Owner Setup:</strong> The deceased used DGLegacy to catalog their assets and designate beneficiaries</li>
+                            <li><strong>HeartBeat Detection:</strong> DGLegacy's system detected an unforeseen event</li>
+                            <li><strong>Beneficiary Notification:</strong> You were notified and given access to this portal</li>
+                            <li><strong>Verification Process:</strong> We verify your identity and prepare legal documentation</li>
+                            <li><strong>Legal Assistance:</strong> We provide lawyers to help you claim your inheritance</li>
+                        </ol>
+                        <p class="mb-0"><strong>Important:</strong> DGLegacy does NOT have direct access to your assets. We help you claim them from the institutions that hold them.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        <i class="bi bi-clock me-2"></i> How long does the process take?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>The timeline varies depending on several factors, but here's a typical breakdown:</p>
+                        <ul>
+                            <li><strong>Identity Verification:</strong> 3-5 business days</li>
+                            <li><strong>Document Preparation:</strong> 5-7 business days</li>
+                            <li><strong>Legal Review:</strong> 2-3 business days</li>
+                            <li><strong>Asset Claiming:</strong> Varies by institution (2-8 weeks)</li>
+                        </ul>
+                        <p class="mb-0"><strong>Total estimated time:</strong> 4-12 weeks depending on complexity and institution response times.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        <i class="bi bi-file-earmark-text me-2"></i> What documents do I need to provide?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>To verify your identity and process your claim, you'll typically need:</p>
+                        <ul>
+                            <li><strong>Government-issued ID:</strong> Driver's license, passport, or state ID</li>
+                            <li><strong>Proof of Relationship:</strong> Birth certificate, marriage certificate, or legal documents</li>
+                            <li><strong>Death Certificate:</strong> Official death certificate of the deceased (if available)</li>
+                            <li><strong>Proof of Address:</strong> Utility bill or bank statement (within last 3 months)</li>
+                            <li><strong>Additional Documents:</strong> May vary by asset type and institution</li>
+                        </ul>
+                        <p class="mb-0">Upload documents securely through the <a href="{% url 'beneficiary_documents' %}">Documents page</a>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asset Status -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                        <i class="bi bi-bar-chart me-2"></i> What do the asset statuses mean?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">Unclaimed</span>
+                            <p class="mt-2 mb-0">Asset has been identified but the claiming process hasn't started yet.</p>
+                        </div>
+                        <div class="mb-3">
+                            <span class="badge bg-primary">Processing</span>
+                            <p class="mt-2 mb-0">We're verifying your identity and preparing legal documentation for this asset.</p>
+                        </div>
+                        <div class="mb-3">
+                            <span class="badge bg-warning text-dark">Ready</span>
+                            <p class="mt-2 mb-0">Verification complete! Legal assistance will be provided to help you claim this asset.</p>
+                        </div>
+                        <div class="mb-0">
+                            <span class="badge bg-success">Completed</span>
+                            <p class="mt-2 mb-0">You have successfully claimed this asset with our assistance!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                        <i class="bi bi-shield-check me-2"></i> Is my information secure?
+                    </button>
+                </h2>
+                <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>Yes! We take security very seriously:</p>
+                        <ul>
+                            <li><strong>Encryption:</strong> All data is encrypted in transit and at rest</li>
+                            <li><strong>Secure Storage:</strong> Documents are stored in secure, encrypted servers</li>
+                            <li><strong>Access Control:</strong> Only authorized personnel can access your case</li>
+                            <li><strong>Compliance:</strong> We comply with all relevant data protection regulations</li>
+                            <li><strong>Regular Audits:</strong> Our security measures are regularly audited</li>
+                        </ul>
+                        <p class="mb-0">Your privacy and security are our top priorities.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fees -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                        <i class="bi bi-currency-dollar me-2"></i> Are there any fees?
+                    </button>
+                </h2>
+                <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>DGLegacy's fee structure is transparent and fair:</p>
+                        <ul>
+                            <li><strong>Verification Services:</strong> Covered by the asset owner's subscription</li>
+                            <li><strong>Document Preparation:</strong> Included in the service</li>
+                            <li><strong>Legal Assistance:</strong> Fees vary by complexity and will be disclosed upfront</li>
+                            <li><strong>No Hidden Fees:</strong> All costs are clearly communicated before you proceed</li>
+                        </ul>
+                        <p class="mb-0">Contact our support team for specific fee information related to your case.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
+                        <i class="bi bi-headset me-2"></i> How do I contact support?
+                    </button>
+                </h2>
+                <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>We're here to help! You can reach us through multiple channels:</p>
+                        <ul>
+                            <li><strong>Portal Messages:</strong> <a href="{% url 'beneficiary_messages' %}">Send us a secure message</a> (response within 24 hours)</li>
+                            <li><strong>Phone:</strong> <a href="tel:+1-800-555-0199">+1 (800) 555-0199</a> (Mon-Fri, 9AM-6PM EST)</li>
+                            <li><strong>Email:</strong> <a href="mailto:support@dglegacy.com">support@dglegacy.com</a></li>
+                            <li><strong>Emergency:</strong> For urgent matters, call and select option 1</li>
+                        </ul>
+                        <p class="mb-0">Our support team typically responds within 24 hours on business days.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legitimacy -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8">
+                        <i class="bi bi-patch-check me-2"></i> How do I know this is legitimate?
+                    </button>
+                </h2>
+                <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        <p>We understand your concern. Here's how you can verify DGLegacy's legitimacy:</p>
+                        <ul>
+                            <li><strong>Official Website:</strong> Visit <a href="https://www.dglegacy.com" target="_blank">www.dglegacy.com</a> to learn about our company</li>
+                            <li><strong>Secure Connection:</strong> This portal uses SSL encryption (look for the padlock in your browser)</li>
+                            <li><strong>Case Number:</strong> Your unique case number (DG-XXXXXX) can be verified with our support team</li>
+                            <li><strong>No Upfront Payments:</strong> We never ask for payment before services are rendered</li>
+                            <li><strong>Professional Communication:</strong> All official communication comes from @dglegacy.com email addresses</li>
+                        </ul>
+                        <p class="mb-0"><strong>Warning:</strong> If you receive suspicious emails or calls claiming to be from DGLegacy, contact us immediately at <a href="tel:+1-800-555-0199">+1 (800) 555-0199</a>.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header" style="background: linear-gradient(135deg, #48BB78 0%, #38B2AC 100%); color: white;">
+                <i class="bi bi-telephone-fill"></i> Need Immediate Help?
+            </div>
+            <div class="card-body">
+                <p>Our support team is available to assist you:</p>
+                <div class="d-grid gap-2">
+                    <a href="tel:+1-800-555-0199" class="btn btn-success">
+                        <i class="bi bi-telephone-fill"></i> Call +1 (800) 555-0199
+                    </a>
+                    <a href="{% url 'beneficiary_messages' %}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots"></i> Send Message
+                    </a>
+                    <a href="mailto:support@dglegacy.com" class="btn btn-outline-secondary">
+                        <i class="bi bi-envelope"></i> Email Support
+                    </a>
+                </div>
+                <hr>
+                <p class="mb-0"><small class="text-muted">
+                    <i class="bi bi-clock"></i> Mon-Fri: 9AM - 6PM EST<br>
+                    <i class="bi bi-reply"></i> Response time: Within 24 hours
+                </small></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" style="background: linear-gradient(135deg, #6B46C1 0%, #4299E1 100%); color: white;">
+                <i class="bi bi-book"></i> Helpful Resources
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="{% url 'beneficiary_dashboard' %}"><i class="bi bi-house-door"></i> Dashboard</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'beneficiary_assets' %}"><i class="bi bi-briefcase"></i> View Your Assets</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'beneficiary_documents' %}"><i class="bi bi-file-earmark-text"></i> Manage Documents</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="{% url 'beneficiary_messages' %}"><i class="bi bi-chat-dots"></i> Message Center</a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="https://www.dglegacy.com" target="_blank"><i class="bi bi-globe"></i> About DGLegacy</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

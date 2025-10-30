@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Messages - DGLegacy{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-chat-dots"></i> Messages</h1>
+        <p class="text-muted">Case Number: <strong>{{ case.case_number }}</strong></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-envelope"></i> Message History
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="message-card {% if not message.is_read and not message.sender_is_beneficiary %}unread{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center">
+                                {% if message.sender_is_beneficiary %}
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #4a90e2 0%, #2c5f8d 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                        <i class="bi bi-person" style="color: white; font-size: 1.2rem;"></i>
+                                    </div>
+                                    <strong style="color: #1e3a5f;">You</strong>
+                                {% else %}
+                                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                        <i class="bi bi-shield-check" style="color: white; font-size: 1.2rem;"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #28a745;">DGLegacy Team</strong>
+                                        {% if message.sender_admin %}
+                                            <br><small class="text-muted">{{ message.sender_admin.get_full_name|default:message.sender_admin.username }}</small>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ message.created_at|date:"M d, Y" }}<br>
+                                    {{ message.created_at|date:"g:i A" }}
+                                </small>
+                                {% if not message.is_read and not message.sender_is_beneficiary %}
+                                    <br><span class="badge bg-warning text-dark mt-1">New</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h6 class="mb-2" style="color: #1e3a5f; font-weight: 700;">{{ message.subject }}</h6>
+                        <p class="mb-0" style="color: #6c757d; line-height: 1.6;">{{ message.content|linebreaks }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-chat-left-text" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-2">No messages yet. Start a conversation below.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-send"></i> Send New Message
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle"></i>
+            <strong>Response Time:</strong> Our team typically responds within 24-48 hours during business days.
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-headset"></i> Customer Support
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">Need Immediate Assistance?</h6>
+                <div class="mb-3">
+                    <i class="bi bi-telephone-fill text-success"></i>
+                    <strong>Phone:</strong><br>
+                    <a href="tel:+1-800-555-0199" class="text-decoration-none">+1 (800) 555-0199</a><br>
+                    <small class="text-muted">Mon-Fri: 9AM - 6PM EST</small>
+                </div>
+                <div class="mb-3">
+                    <i class="bi bi-envelope-fill text-success"></i>
+                    <strong>Email:</strong><br>
+                    <a href="mailto:support@dglegacy.com" class="text-decoration-none">support@dglegacy.com</a>
+                </div>
+                <div class="mb-0">
+                    <i class="bi bi-chat-dots-fill text-success"></i>
+                    <strong>Live Chat:</strong><br>
+                    <button class="btn btn-sm btn-success mt-1" onclick="document.getElementById('chat-toggle-btn').click()">
+                        <i class="bi bi-chat-right-dots"></i> Start Live Chat
+                    </button>
+                    <br><small class="text-muted">Click to open chat widget</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-primary">
+            <h6><i class="bi bi-question-circle-fill"></i> Frequently Asked Questions</h6>
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            How long does the verification process take?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            The verification process typically takes 5-10 business days. We'll keep you updated throughout the process via messages.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            What documents do I need to provide?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            You'll need: (1) Government-issued ID, (2) Proof of relationship to the deceased, (3) Death certificate. Upload these in the Documents section.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            How does DGLegacy help me claim my assets?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            We verify your identity, prepare all legal documentation, and send qualified lawyers to assist you in claiming your inheritance from banks, institutions, and other asset holders.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
