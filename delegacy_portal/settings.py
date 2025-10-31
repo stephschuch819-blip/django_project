@@ -15,9 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*'] if DEBUG else ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["*"]
 
 # CSRF trusted origins for browser preview
 CSRF_TRUSTED_ORIGINS = [
@@ -90,12 +90,14 @@ WSGI_APPLICATION = 'delegacy_portal.wsgi.application'
 # }
 
 # External Database Configuration 
-
-database_url = "postgresql://dglegacy_user:IngQk8WI00ObsHcjrFtWDm9W6SIGW5fQ@dpg-d41o908gjchc73ds79h0-a.oregon-postgres.render.com/dglegacy"
+# Use environment variable for database URL to avoid hardcoding credentials
+database_url = config(
+    'DATABASE_URL',
+    default='postgresql://dglegacy_user:IngQk8WI00ObsHcjrFtWDm9W6SIGW5fQ@dpg-d41o908gjchc73ds79h0-a.oregon-postgres.render.com/dglegacy'
+)
 
 DATABASES = {
     'default': dj_database_url.parse(database_url)
-       
 }
 
 
