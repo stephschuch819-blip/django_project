@@ -4,6 +4,9 @@ set -o errexit
 
 pip install -r requirements.txt
 
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
 # Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input --clear
