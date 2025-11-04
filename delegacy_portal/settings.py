@@ -23,6 +23,9 @@ if DEBUG:
 else:
     ALLOWED_HOSTS = [
         'django-project-68um.onrender.com',
+        'django-project-68bm.onrender.com',
+        'www.dglegacyco.online',
+        'dglegacyco.online',
         'localhost',
         '127.0.0.1',
     ]
@@ -32,6 +35,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'https://django-project-68um.onrender.com',
+    'https://django-project-68bm.onrender.com',
+    'https://www.dglegacyco.online',
+    'https://dglegacyco.online',
 ]
 
 # Add common browser preview proxy ports in development
