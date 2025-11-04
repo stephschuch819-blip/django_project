@@ -3,13 +3,23 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Sum, Count, Q
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from django.contrib.auth.hashers import check_password
+from django_ratelimit.decorators import ratelimit
+import logging
 from .models import BeneficiaryCase, Asset, Document, Message
 from .forms import BeneficiaryLoginForm, MessageForm, DocumentUploadForm
 
+# Security logger for tracking suspicious access attempts
+logger = logging.getLogger('portal.security')
 
+
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def beneficiary_login(request):
     """
     Login view for beneficiaries using case number and password.
+    Rate limited to 5 login attempts per minute per IP address.
     """
     if request.session.get('beneficiary_case_id'):
         return redirect('beneficiary_dashboard')
@@ -26,11 +36,21 @@ def beneficiary_login(request):
                     is_active=True
                 )
                 
-                # Simple password check (in production, use hashing)
-                if case.password == password:
+                # Secure password check using Django's password hashing
+                if check_password(password, case.password):
+                    # Regenerate session to prevent session fixation attacks
+                    request.session.cycle_key()
+                    
                     # Set session
                     request.session['beneficiary_case_id'] = case.id
                     request.session['beneficiary_name'] = case.beneficiary_name
+                    
+                    # Log successful login
+                    logger.info(
+                        f"Successful login for case {case.case_number} "
+                        f"from IP {request.META.get('REMOTE_ADDR')}"
+                    )
+                    
                     messages.success(request, f'Welcome, {case.beneficiary_name}!')
                     return redirect('beneficiary_dashboard')
                 else:
@@ -52,14 +72,65 @@ def beneficiary_logout(request):
     return redirect('beneficiary_login')
 
 
+def get_beneficiary_case(request):
+    """
+    Securely retrieve the beneficiary case for the current session.
+    
+    This function provides IDOR protection by:
+    1. Validating the session contains a case_id
+    2. Verifying the case exists and is active
+    3. Logging suspicious access attempts
+    
+    Returns:
+        BeneficiaryCase: The authenticated beneficiary's case
+    
+    Raises:
+        PermissionDenied: If session is invalid or case is inactive
+        Http404: If case doesn't exist
+    """
+    case_id = request.session.get('beneficiary_case_id')
+    
+    if not case_id:
+        logger.warning(
+            f"Unauthorized access attempt from IP {request.META.get('REMOTE_ADDR')}: "
+            f"No case_id in session"
+        )
+        raise PermissionDenied("Invalid session. Please log in again.")
+    
+    try:
+        case = BeneficiaryCase.objects.get(id=case_id, is_active=True)
+        return case
+    except BeneficiaryCase.DoesNotExist:
+        logger.warning(
+            f"Suspicious access attempt from IP {request.META.get('REMOTE_ADDR')}: "
+            f"Session contains invalid case_id={case_id}"
+        )
+        # Clear the invalid session
+        request.session.flush()
+        raise Http404("Case not found or has been deactivated. Please log in again.")
+
+
 def beneficiary_required(view_func):
     """
-    Decorator to ensure beneficiary is logged in.
+    Decorator to ensure beneficiary is logged in with proper authorization.
+    
+    This decorator provides IDOR protection by:
+    1. Checking for valid session
+    2. Validating case ownership through get_beneficiary_case()
+    3. Handling security exceptions gracefully
     """
     def wrapper(request, *args, **kwargs):
         if not request.session.get('beneficiary_case_id'):
             messages.warning(request, 'Please log in to access this page.')
             return redirect('beneficiary_login')
+        
+        try:
+            # Validate case ownership - this will raise exceptions if invalid
+            get_beneficiary_case(request)
+        except (PermissionDenied, Http404) as e:
+            messages.error(request, str(e))
+            return redirect('beneficiary_login')
+        
         return view_func(request, *args, **kwargs)
     return wrapper
 
@@ -69,8 +140,8 @@ def beneficiary_dashboard(request):
     """
     Dashboard view for beneficiaries showing assets overview.
     """
-    case_id = request.session.get('beneficiary_case_id')
-    case = get_object_or_404(BeneficiaryCase, id=case_id, is_active=True)
+    # Use secure case retrieval with IDOR protection
+    case = get_beneficiary_case(request)
     
     # Get assets with statistics
     assets = case.assets.all()
@@ -119,8 +190,8 @@ def beneficiary_assets(request):
     """
     View to display all assets for the beneficiary.
     """
-    case_id = request.session.get('beneficiary_case_id')
-    case = get_object_or_404(BeneficiaryCase, id=case_id, is_active=True)
+    # Use secure case retrieval with IDOR protection
+    case = get_beneficiary_case(request)
     
     assets = case.assets.all()
     
@@ -137,8 +208,8 @@ def beneficiary_documents(request):
     """
     View to display and upload documents for the beneficiary.
     """
-    case_id = request.session.get('beneficiary_case_id')
-    case = get_object_or_404(BeneficiaryCase, id=case_id, is_active=True)
+    # Use secure case retrieval with IDOR protection
+    case = get_beneficiary_case(request)
     
     if request.method == 'POST':
         form = DocumentUploadForm(request.POST, request.FILES)
@@ -170,8 +241,8 @@ def beneficiary_messages(request):
     """
     View to display and send messages.
     """
-    case_id = request.session.get('beneficiary_case_id')
-    case = get_object_or_404(BeneficiaryCase, id=case_id, is_active=True)
+    # Use secure case retrieval with IDOR protection
+    case = get_beneficiary_case(request)
     
     if request.method == 'POST':
         form = MessageForm(request.POST)

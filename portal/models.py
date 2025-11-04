@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from django.core.validators import MinLengthValidator
 from django.utils.crypto import get_random_string
 import uuid
@@ -47,7 +48,20 @@ class BeneficiaryCase(models.Model):
         if not self.case_number:
             # Generate unique case number
             self.case_number = self.generate_case_number()
+        
+        # Hash password if it's not already hashed
+        # Django hashed passwords start with algorithm identifier (e.g., 'pbkdf2_sha256$')
+        if self.password and not self.password.startswith('pbkdf2_sha256$'):
+            self.password = make_password(self.password)
+        
         super().save(*args, **kwargs)
+    
+    def set_password(self, raw_password):
+        """
+        Set the password using Django's password hashing.
+        Use this method when updating passwords.
+        """
+        self.password = make_password(raw_password)
     
     @staticmethod
     def generate_case_number():
