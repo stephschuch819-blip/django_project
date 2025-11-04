@@ -87,9 +87,15 @@ def beneficiary_dashboard(request):
     
     # Store unread message IDs in session for notification display
     if unread_admin_messages.exists():
-        request.session['show_message_notifications'] = list(
-            unread_admin_messages.values('id', 'subject', 'created_at')
-        )
+        # Convert datetime to string for JSON serialization
+        notifications = []
+        for msg in unread_admin_messages.values('id', 'subject', 'created_at'):
+            notifications.append({
+                'id': msg['id'],
+                'subject': msg['subject'],
+                'created_at': msg['created_at'].isoformat() if msg['created_at'] else None
+            })
+        request.session['show_message_notifications'] = notifications
     
     unread_messages = unread_admin_messages.count()
     
